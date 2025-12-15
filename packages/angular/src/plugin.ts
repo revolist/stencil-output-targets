@@ -30,6 +30,7 @@ export function normalizeOutputTarget(config: Config, outputTarget: OutputTarget
     valueAccessorConfigs: outputTarget.valueAccessorConfigs || [],
     customElementsDir: outputTarget.customElementsDir ?? 'components',
     outputType: outputTarget.outputType ?? OutputTypes.Standalone,
+    lazyLoadCustomElements: outputTarget.lazyLoadCustomElements ?? false,
   };
 
   if (config.rootDir == null) {

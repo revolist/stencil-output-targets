@@ -127,15 +127,19 @@ ${createImportStatement(componentLibImports, './angular-component-lib/utils')}\n
    * IonButton Angular Component that takes in the Web Component as a parameter.
    */
   if (isCustomElementsBuild && outputTarget.componentCorePackage !== undefined) {
-    const cmpImports = components.map((component) => {
-      const pascalImport = dashToPascalCase(component.tagName);
+    if (outputTarget.lazyLoadCustomElements) {
+      sourceImports = `import { defineCustomElements } from '${normalizePath(outputTarget.componentCorePackage)}/loader';`;
+    } else {
+      const cmpImports = components.map((component) => {
+        const pascalImport = dashToPascalCase(component.tagName);
 
-      return `import { defineCustomElement as define${pascalImport} } from '${normalizePath(
-        outputTarget.componentCorePackage
-      )}/${outputTarget.customElementsDir}/${component.tagName}.js';`;
-    });
+        return `import { defineCustomElement as define${pascalImport} } from '${normalizePath(
+          outputTarget.componentCorePackage
+        )}/${outputTarget.customElementsDir}/${component.tagName}.js';`;
+      });
 
-    sourceImports = cmpImports.join('\n');
+      sourceImports = cmpImports.join('\n');
+    }
   }
 
   const proxyFileOutput = [];
@@ -188,7 +192,8 @@ ${createImportStatement(componentLibImports, './angular-component-lib/utils')}\n
       isCustomElementsBuild,
       isStandaloneBuild,
       inlineComponentProps,
-      cmpMeta.events || []
+      cmpMeta.events || [],
+      outputTarget.lazyLoadCustomElements
     );
     const moduleDefinition = generateAngularModuleForComponent(cmpMeta.tagName);
     const componentTypeDefinition = createComponentTypeDefinition(

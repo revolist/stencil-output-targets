@@ -34,6 +34,8 @@ export interface OutputTargetAngular {
    * to type-check and show jsdocs when using the components in html-templates.
    */
   inlineProperties?: boolean;
+
+  lazyLoadCustomElements?: boolean;
 }
 
 export type ValueAccessorTypes = 'text' | 'radio' | 'select' | 'number' | 'boolean';

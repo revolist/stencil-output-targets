@@ -71,7 +71,8 @@ export const createAngularComponentDefinition = (
   includeImportCustomElements = false,
   standalone = false,
   inlineComponentProps: readonly ComponentCompilerProperty[] = [],
-  events: readonly ComponentCompilerEvent[] = []
+  events: readonly ComponentCompilerEvent[] = [],
+  lazyLoadCustomElements = false
 ) => {
   const tagNameAsPascal = dashToPascalCase(tagName);
 
@@ -94,9 +95,12 @@ export const createAngularComponentDefinition = (
   const proxyCmpOptions = [];
 
   if (includeImportCustomElements) {
-    const defineCustomElementFn = `define${tagNameAsPascal}`;
-
-    proxyCmpOptions.push(`\n  defineCustomElementFn: ${defineCustomElementFn}`);
+    if (lazyLoadCustomElements) {
+      proxyCmpOptions.push(`\n  defineCustomElementFn: defineCustomElements`);
+    } else {
+      const defineCustomElementFn = `define${tagNameAsPascal}`;
+      proxyCmpOptions.push(`\n  defineCustomElementFn: ${defineCustomElementFn}`);
+    }
   }
 
   if (hasInputs) {
