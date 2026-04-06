@@ -14,9 +14,10 @@ export default defineConfig({
       from: 'component-library-react',
       hydrateModule: import('component-library/hydrate'),
       serializeShadowRoot: {
-        'scoped': ['my-counter'],
+        scoped: ['my-counter', 'my-button', 'my-component', 'my-radio'],
         default: 'declarative-shadow-dom',
       },
+      setTagTransformer: (tag) => tag.startsWith('my-transform-') ? `v1-${tag}` : tag,
     }),
   ],
 })

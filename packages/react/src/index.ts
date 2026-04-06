@@ -41,7 +41,7 @@ export interface ReactOutputTargetOptions {
    */
   excludeServerSideRenderingFor?: string[];
   /**
-   * If `true`, the output target will generate a separate ES module for each React component wrapper. Defaults to `false`.
+   * If `true`, the output target will generate a separate ES module for each React component wrapper (better for tree-shaking).
    * @default false
    */
   esModules?: boolean;
@@ -65,6 +65,20 @@ export interface ReactOutputTargetOptions {
    * @default 'declarative-shadow-dom'
    */
   serializeShadowRoot?: RenderToStringOptions['serializeShadowRoot'];
+  /**
+   * Use `transformTag` to enable runtime tag name transformation for your components.
+   * When enabled, the output target will import `transformTag` from your component library
+   * and apply it when rendering components.
+   *
+   * You must export `transformTag` from the root entry of your component library:
+   * ```ts
+   * // src/index.ts
+   * export { transformTag } from '@stencil/core';
+   * ```
+   *
+   * @default false
+   */
+  transformTag?: boolean;
 }
 
 const PLUGIN_NAME = 'react-output-target';
@@ -93,6 +107,7 @@ export const reactOutputTarget = ({
   clientModule,
   excludeServerSideRenderingFor,
   serializeShadowRoot,
+  transformTag,
 }: ReactOutputTargetOptions): ReactOutputTarget => {
   let customElementsDir = DIST_CUSTOM_ELEMENTS_DEFAULT_DIR;
   return {
@@ -155,10 +170,6 @@ export const reactOutputTarget = ({
         }
       }
 
-      if (!outDir) {
-        throw new Error(`The 'outDir' option is required.`);
-      }
-
       /**
        * Validate the configuration to detect the package name of the Stencil project.
        */
@@ -179,7 +190,6 @@ export const reactOutputTarget = ({
       const timespan = buildCtx.createTimeSpan(`generate ${PLUGIN_NAME} started`, true);
 
       const components = buildCtx.components;
-
       const project = new Project();
 
       const sourceFiles = await createComponentWrappers({
@@ -194,6 +204,7 @@ export const reactOutputTarget = ({
         clientModule,
         excludeServerSideRenderingFor,
         serializeShadowRoot,
+        transformTag,
       });
 
       await Promise.all(

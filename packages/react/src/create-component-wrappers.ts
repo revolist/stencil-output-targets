@@ -3,6 +3,7 @@ import path from 'node:path';
 import { Project, SourceFile } from 'ts-morph';
 import { createEsModulesComponentsFile } from './create-es-modules-components-file.js';
 import { createStencilReactComponents } from './create-stencil-react-components.js';
+import { createTagTransformer } from './create-tag-transformer.js';
 import type { RenderToStringOptions } from './runtime/ssr.js';
 
 export const createComponentWrappers = async ({
@@ -17,6 +18,7 @@ export const createComponentWrappers = async ({
   clientModule,
   excludeServerSideRenderingFor,
   serializeShadowRoot,
+  transformTag,
 }: {
   stencilPackageName: string;
   components: ComponentCompilerMeta[];
@@ -29,6 +31,7 @@ export const createComponentWrappers = async ({
   clientModule?: string;
   excludeServerSideRenderingFor?: string[];
   serializeShadowRoot?: RenderToStringOptions['serializeShadowRoot'];
+  transformTag?: boolean;
 }) => {
   const sourceFiles: SourceFile[] = [];
 
@@ -73,8 +76,17 @@ export const createComponentWrappers = async ({
       components,
       stencilPackageName,
       customElementsDir,
+      transformTag,
     });
     fileContents[outputPath] = stencilReactComponent;
+
+    /**
+     * create tag-transformer file (for both client and server)
+     */
+    if (transformTag) {
+      const tagTransformerPath = path.join(outDir, 'tag-transformer.ts');
+      fileContents[tagTransformerPath] = createTagTransformer({ stencilPackageName, customElementsDir });
+    }
 
     /**
      * create a server side component
@@ -90,6 +102,7 @@ export const createComponentWrappers = async ({
         hydrateModule,
         clientModule,
         serializeShadowRoot,
+        transformTag,
       });
       fileContents[outputPath] = stencilReactComponent;
     }

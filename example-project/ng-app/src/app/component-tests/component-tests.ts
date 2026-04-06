@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MyComponent, MyCounter, MyToggle } from 'component-library-angular';
+import { MyComponent, MyCounter, MyToggle, MyTransformTest } from 'component-library-angular';
 import { ButtonTests } from './button-tests/button-tests';
 import { CheckboxTests } from './checkbox-tests/checkbox-tests';
 import { ComplexPropsTests } from './complex-props-tests/complex-props-tests';
@@ -9,10 +9,12 @@ import { RangeTests } from './range-tests/range-tests';
 
 @Component({
   selector: 'app-component-tests',
+  standalone: true,
   imports: [
     MyComponent,
     MyCounter,
     MyToggle,
+    MyTransformTest,
     CheckboxTests,
     InputFormTests,
     ButtonTests,

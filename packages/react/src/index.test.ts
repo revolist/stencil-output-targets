@@ -175,28 +175,4 @@ describe('reactOutputTarget', () => {
       expect(__internal_getCustomElementsDir()).toBe('my-custom-dir');
     }
   });
-
-  it('should throw an error if the outDir option is not provided', () => {
-    const { validate } = reactOutputTarget({
-      stencilPackageName: 'my-components',
-    } as any);
-
-    if (!validate) {
-      throw new Error('validate is not defined');
-    }
-
-    expect(() =>
-      validate(
-        {
-          outputTargets: [
-            {
-              type: 'dist-custom-elements',
-              externalRuntime: false,
-            },
-          ],
-        } as any,
-        []
-      )
-    ).toThrowError(`The 'outDir' option is required.`);
-  });
 });

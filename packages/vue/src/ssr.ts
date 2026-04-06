@@ -16,8 +16,13 @@ type RenderToString = (html: string, options: RenderToStringOptions) => Promise<
 
 interface StencilSSRComponentOptions {
   tagName: string;
-  hydrateModule: Promise<{ renderToString: RenderToString }>;
+  hydrateModule: Promise<{
+    renderToString: RenderToString;
+    setTagTransformer?: (transformer: (tag: string) => string) => void;
+    transformTag?: (tag: string) => string;
+  }>;
   props?: Record<string, [any, string?]>;
+  getTagTransformer?: () => ((tag: string) => string) | undefined;
 }
 
 /**
@@ -84,8 +89,22 @@ export function defineStencilSSRComponent<Props, VModelType = string | number | 
       /**
        * transform component into Declarative Shadow DOM by lazy loading the hydrate module
        */
-      const toSerialize = `<${options.tagName}${stringProps}>${renderedLightDom}</${options.tagName}>`;
-      const { renderToString } = await options.hydrateModule;
+      const hydrateModule = await options.hydrateModule;
+
+      // Sync the tag transformer with the hydrate module if provided
+      if (options.getTagTransformer) {
+        const tagTransformer = options.getTagTransformer();
+        if (tagTransformer && hydrateModule.setTagTransformer) {
+          hydrateModule.setTagTransformer(tagTransformer);
+        }
+      }
+
+      // Use the hydrate module's transformTag if available, otherwise use the tag as-is
+      const transformedTagName = hydrateModule.transformTag
+        ? hydrateModule.transformTag(options.tagName)
+        : options.tagName;
+      const toSerialize = `<${transformedTagName}${stringProps}>${renderedLightDom}</${transformedTagName}>`;
+      const { renderToString } = hydrateModule;
       const { html } = await renderToString(toSerialize, {
         fullDocument: false,
         serializeShadowRoot: true,
@@ -101,11 +120,11 @@ export function defineStencilSSRComponent<Props, VModelType = string | number | 
            * by default Vue strips out the <style> tag, so this little trick
            * makes it work by wrapping it in a component tag
            */
-          .replace('<style>', `<component :is="'style'">`)
-          .replace('</style>', '</component>'),
+          .replace(/<style([^>]*)>/g, `<component :is="'style'" $1>`)
+          .replace(/<\/style>/g, '</component>'),
         {
           comments: true,
-          isCustomElement: (tag) => tag === options.tagName,
+          isCustomElement: (tag) => tag === transformedTagName || tag === options.tagName,
         }
       );
     },

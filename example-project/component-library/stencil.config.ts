@@ -1,8 +1,8 @@
 import { Config } from '@stencil/core';
 import { angularOutputTarget, ValueAccessorConfig } from '@stencil/angular-output-target';
 import { reactOutputTarget } from '@stencil/react-output-target';
+import { typesOutputTarget } from '@stencil/types-output-target';
 import { vueOutputTarget, ComponentModelConfig } from '@stencil/vue-output-target';
-
 
 const angularValueAccessorBindings: ValueAccessorConfig[] = [
   {
@@ -47,7 +47,7 @@ const vueComponentModels: ComponentModelConfig[] = [
     elements: ['my-checkbox'],
     event: 'ionChangeNested',
     targetAttr: 'checked',
-    eventAttr: 'detail.nested.checked'
+    eventAttr: 'detail.nested.checked',
   },
   {
     elements: ['my-range', 'my-radio-group'],
@@ -63,13 +63,25 @@ export const config: Config = {
     angularOutputTarget({
       componentCorePackage: 'component-library',
       directivesProxyFile: '../component-library-angular/projects/library/src/directives/proxies.ts',
-      valueAccessorConfigs: angularValueAccessorBindings
+      valueAccessorConfigs: angularValueAccessorBindings,
+      transformTag: true,
     }),
     reactOutputTarget({
       outDir: '../component-library-react/src',
       hydrateModule: 'component-library/hydrate',
       clientModule: 'component-library-react',
-      serializeShadowRoot: { scoped: ['my-counter'], default: 'declarative-shadow-dom' }
+      serializeShadowRoot: {
+        scoped: ['my-counter', 'my-button', 'my-component', 'my-radio'],
+        default: 'declarative-shadow-dom',
+      },
+      transformTag: true,
+    }),
+    typesOutputTarget({
+      reactTypesPath: 'dist/types',
+      vueTypesPath: 'dist/types',
+      solidTypesPath: 'dist/types',
+      svelteTypesPath: 'dist/types',
+      preactTypesPath: 'dist/types',
     }),
     vueOutputTarget({
       includeImportCustomElements: true,
@@ -79,11 +91,12 @@ export const config: Config = {
       hydrateModule: 'component-library/hydrate',
       proxiesFile: '../component-library-vue/src/index.ts',
       componentModels: vueComponentModels,
+      transformTag: true,
     }),
     {
       type: 'dist-custom-elements',
       externalRuntime: false,
-      dir: 'components'
+      dir: 'components',
     },
     {
       type: 'dist',
@@ -101,4 +114,7 @@ export const config: Config = {
       serviceWorker: null, // disable service workers
     },
   ],
+  extras: {
+    additionalTagTransformers: true,
+  },
 };
